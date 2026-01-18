@@ -286,12 +286,12 @@ function enviar() {
 
   const img = document.getElementById("canvas").toDataURL("image/jpeg");
 
-  fetch("https://script.google.com/macros/s/AKfycbzXrKpOeuFTD4TWULtxmJ35YI9ru8MFgl6W2L2rFfMXL0EC3TF6RtyzMJSmML_SsrM/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbyzI05k1LGieQ4ayXnvfP5YvbSblw3Ljn-Lvk0ClV58cuANUf4CnLLuNg4O1Ixyyg3D/exec", {
     method: "POST",
     body: JSON.stringify({ nome, bloco, apto, img })
   });
 
-  setTimeout(() => location.reload(), 2000);
+  setTimeout(() => location.reload(), 1000);
 }
 </script>
 
@@ -299,6 +299,7 @@ function enviar() {
 
 </body>
 </html>
+
 
 
 
