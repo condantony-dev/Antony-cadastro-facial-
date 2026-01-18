@@ -26,9 +26,9 @@
   input {
     width: 90vw;
     max-width: 320px;
-    padding: 10px;
-    margin: 6px auto;
-    font-size: 16px;
+    padding: 5px;
+    margin: 3px auto;
+    font-size: 12px;
     border-radius: 6px;
     border: 1px solid #ccc;
     display: block;
@@ -55,7 +55,7 @@
   }
 
   video {
-    width: 80%;
+    width: 70%;
     border-radius: 12px;
   }
 
@@ -63,8 +63,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 50%;
-    height: 70%;
+    width: 40%;
+    height: 60%;
     border: 3px solid #00ff00;
     border-radius: 50% / 60%;
     transform: translate(-50%, -50%);
@@ -73,20 +73,20 @@
 
   .btn-trocar {
     position: absolute;
-    top: 8px;
+    top: 1px;
     left: 50%;
     transform: translateX(-50%);
-    width: 70%;
-    background: rgba(0,0,0,0.7);
+    width: 50%;
+    background: rgba(255,0,0,0.7);
     z-index: 10;
   }
 
   .info {
     background: #e0f0ff;
-    padding: 10px;
+    padding: 5px;
     border-radius: 8px;
     margin: 10px auto;
-    font-size: 14px;
+    font-size: 12px;
     max-width: 320px;
   }
 
@@ -128,7 +128,7 @@
 <h4>Cadastro Facial Antony de Oliveira</h4>
 
 <div class="lgpd" id="lgpdBox">
-  Ao enviar sua foto, você autoriza o uso dela para cadastro no sistema de controle de acesso do condomínio.
+  Ao enviar sua foto, você autoriza o uso dela para cadastro no sistema de controle de acesso do condomínio.----> TIRE A FOTO EM UM FUNDO CLARO, BEM ILUMINADO, SEM OCULOS, SEM SORRISO , SEM MUITA MAQUIAGEM :) <----.
   <br><br>
   <button onclick="aceitarLGPD()">OK</button>
 </div>
@@ -140,11 +140,11 @@
   <input id="apto" placeholder="Apartamento">
 
   <div class="info" id="mensagem">
-    Posicione seu rosto dentro do oval.
+    Posicione seu rosto dentro do oval verde, não use os oculos e não sorria.
   </div>
 
   <div class="camera-container">
-    <button class="btn-trocar" onclick="trocarCamera()">Trocar câmera</button>
+    <button class="btn-trocar" onclick="trocarCamera()">Inverter Câmera</button>
     <video id="video" autoplay playsinline></video>
     <div class="face-oval"></div>
   </div>
@@ -160,7 +160,7 @@
   <canvas id="canvas" style="display:none;"></canvas>
 
   <div id="status" style="display:none; font-weight:bold; color:green;">
-    Salvando dados, aguarde...
+    Salvando dados, aguarde Validação da ADMINSTRAÇÃO...
   </div>
 
 </div>
@@ -194,7 +194,7 @@ async function iniciarCamera() {
   } else {
     rostoDetectado = true; // libera captura na traseira
     document.getElementById("mensagem").innerText =
-      "Posicione o rosto no oval e capture a foto.";
+      "Posicione o rosto no oval verde, SEM OCULOS E NAO SORRIA.";
   }
 }
 
@@ -219,7 +219,7 @@ function iniciarFaceMesh(video) {
     if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
       rostoDetectado = true;
       document.getElementById("mensagem").innerText =
-        "Rosto detectado. Mantenha dentro do oval.";
+        "Mantenha o rosto dentro do oval verde, NAO SORRIA, SEM OCULOS.";
     } else {
       rostoDetectado = false;
       document.getElementById("mensagem").innerText =
@@ -299,6 +299,14 @@ function enviar() {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
