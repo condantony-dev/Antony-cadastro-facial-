@@ -159,6 +159,20 @@
 
   <canvas id="canvas" style="display:none;"></canvas>
 
+  <div id="confirmacao" style="
+  display:none;
+  background:#d4edda;
+  color:#155724;
+  padding:15px;
+  border-radius:10px;
+  margin:15px auto;
+  max-width:320px;
+  font-weight:bold;
+">
+  ✅ Cadastro enviado com sucesso!
+</div>
+
+  
   <div id="status" style="display:none; font-weight:bold; color:green;">
     Salvando dados, aguarde Validação da ADMINSTRAÇÃO...
   </div>
@@ -291,14 +305,21 @@ function enviar() {
     body: JSON.stringify({ nome, bloco, apto, img })
   });
 
-  setTimeout(() => location.reload(), 1000);
+  document.getElementById("formulario").style.display = "none";
+  document.getElementById("confirmacao").style.display = "block";
+
+  setTimeout(() => {
+    location.reload();
+  }, 1000);
 }
+
 </script>
 
 
 
 </body>
 </html>
+
 
 
 
