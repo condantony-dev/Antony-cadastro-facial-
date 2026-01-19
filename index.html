@@ -160,6 +160,13 @@
   <canvas id="canvas" style="display:none;"></canvas>
 
   <div id="status" style="display:none; font-weight:bold; color:green;">
+  <div id="confirmacao" style="   display:none;   font-size: 60px;   color: green;   margin-top: 20px;">
+  ✔
+  <div style="font-size:16px; color:#333;">
+    Cadastro enviado com sucesso!
+  </div>
+</div>
+
     Salvando dados, aguarde Validação da ADMINSTRAÇÃO...
   </div>
 
@@ -286,19 +293,35 @@ function enviar() {
 
   const img = document.getElementById("canvas").toDataURL("image/jpeg");
 
+  // Desabilita o botão para evitar duplo envio
+  document.querySelector("button[onclick='enviar()']").disabled = true;
+
   fetch("https://script.google.com/macros/s/AKfycbznmyTHb6XVuT_qRhH6XREZfA2MThl6EPQ6FVDoHmPqtix8t_ZicT-zR1lJFN5KATRH/exec", {
     method: "POST",
     body: JSON.stringify({ nome, bloco, apto, img })
-  });
+  })
+  .then(() => {
+    // Esconde formulário
+    document.getElementById("formulario").style.display = "none";
 
-  setTimeout(() => location.reload(), 1000);
+    // Mostra confirmação
+    document.getElementById("confirmacao").style.display = "block";
+
+    // Recarrega depois de 2 segundos
+    setTimeout(() => location.reload(), 2000);
+  })
+  .catch(() => {
+    alert("Erro ao enviar. Tente novamente.");
+  });
 }
+
 </script>
 
 
 
 </body>
 </html>
+
 
 
 
