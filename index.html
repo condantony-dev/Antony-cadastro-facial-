@@ -19,11 +19,11 @@
 
   img.logo {
     width: 40vw;
-    max-width: 160px;
+    max-width: 330px;
     margin: 5px auto;
   }
 
-  input {
+  input, select {
     width: 90vw;
     max-width: 320px;
     padding: 5px;
@@ -125,7 +125,7 @@
 
 <img src="logo.png" class="logo">
 
-<h4>Cadastro Facial Antony de Oliveira</h4>
+<h4>Cadastro Facial Antony</h4>
 
 <div class="lgpd" id="lgpdBox">
   Ao enviar sua foto, você autoriza o uso dela para cadastro no sistema de controle de acesso do condomínio.----> TIRE A FOTO EM UM FUNDO CLARO, BEM ILUMINADO, SEM OCULOS, SEM SORRISO , SEM MUITA MAQUIAGEM :) <----.
@@ -136,8 +136,44 @@
 <div id="formulario" style="display:none;">
 
   <input id="nome" placeholder="Nome completo">
-  <input id="bloco" placeholder="Bloco">
-  <input id="apto" placeholder="Apartamento">
+  <select id="bloco">
+    <option value="" selected disabled>Bloco</option>
+	<option value="00">funcionario</option>
+    <option value="01">01</option>
+    <option value="02">02</option>
+    <option value="03">03</option>
+    <option value="04">04</option>
+    <option value="05">05</option>
+    <option value="06">06</option>
+    <option value="07">07</option>
+    <option value="08">08</option>
+    <option value="09">09</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+
+  </select>
+  <select id="apto">
+    <option value="" selected disabled>Apartamento</option>
+	 <option value="000">funcionario</option>
+    <option value="101">101</option>
+    <option value="102">102</option>
+    <option value="103">103</option>
+    <option value="104">104</option>
+    <option value="201">201</option>
+    <option value="202">202</option>
+    <option value="203">203</option>
+    <option value="204">204</option>
+    <option value="301">301</option>
+    <option value="302">302</option>
+    <option value="303">303</option>
+    <option value="304">304</option>
+    <option value="401">401</option>
+    <option value="402">402</option>
+    <option value="403">403</option>
+    <option value="404">404</option>
+  </select>
 
   <div class="info" id="mensagem">
     Posicione seu rosto dentro do oval verde, não use os oculos e não sorria.
@@ -154,13 +190,16 @@
   <div class="preview-box">
     <img id="fotoPreview" src="">
   </div>
+  <div class="info" id="fotoInfo" style="display:none;">
+    Foto: <span id="fotoTamanho">0</span> KB
+  </div>
 
   <button onclick="enviar()">Finalizar</button>
 
   <canvas id="canvas" style="display:none;"></canvas>
 
-  <div id="status" style="display:none; font-weight:bold; color:green;">
-    Salvando dados, aguarde Validação da ADMINSTRAÇÃO...
+  <div id="status" style="display:none; font-weight:bold;">
+    Salvando dados, aguarde Validação da ADMINISTRAÇÃO...
   </div>
 
 </div>
@@ -263,6 +302,9 @@ function capturar() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 
+  // Limpa transformações anteriores
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
   if (usandoFrontal) {
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
@@ -270,42 +312,207 @@ function capturar() {
 
   ctx.drawImage(video, 0, 0);
 
-  document.getElementById("fotoPreview").src =
-    canvas.toDataURL("image/jpeg");
+  // Gera automaticamente a melhor versão possível com no máximo 99 KB.
+  const resultado = comprimirImagem(canvas, 99 * 1024);
+
+  if (!resultado) {
+    alert("Não foi possível preparar a foto.");
+    return;
+  }
+
+  document.getElementById("fotoPreview").src = resultado.dataUrl;
+  document.getElementById("fotoTamanho").innerText =
+    (resultado.blob.size / 1024).toFixed(1);
+  document.getElementById("fotoInfo").style.display = "block";
+
+  // Guarda a versão comprimida para o envio.
+  window.fotoComprimida = resultado.dataUrl;
+
+  document.getElementById("mensagem").innerText =
+    "Foto capturada. Confira a imagem e clique em Finalizar.";
 }
 
-function enviar() {
-  const nome = document.getElementById("nome").value;
-  const bloco = document.getElementById("bloco").value;
-  const apto = document.getElementById("apto").value;
+
+/*
+ * Comprime a imagem tentando preservar a maior qualidade possível.
+ *
+ * Primeiro reduz somente a qualidade JPEG.
+ * Se ainda ultrapassar 99 KB, reduz progressivamente a resolução.
+ */
+function comprimirImagem(sourceCanvas, limiteBytes) {
+  let width = sourceCanvas.width;
+  let height = sourceCanvas.height;
+
+  const qualidades = [0.92, 0.88, 0.84, 0.80, 0.76, 0.72, 0.68, 0.64, 0.60];
+
+  // Primeira tentativa: mantém a resolução original.
+  for (const qualidade of qualidades) {
+    const tentativa = canvasParaDataUrl(sourceCanvas, width, height, qualidade);
+    if (tentativa.blob.size <= limiteBytes) {
+      return tentativa;
+    }
+  }
+
+  // Se a qualidade mínima ainda não for suficiente,
+  // reduz a resolução gradualmente.
+  let escala = 0.90;
+
+  while (escala >= 0.30) {
+    const novoWidth = Math.max(320, Math.round(width * escala));
+    const novoHeight = Math.max(240, Math.round(height * escala));
+
+    for (const qualidade of [0.82, 0.78, 0.74, 0.70, 0.66, 0.62, 0.58, 0.54, 0.50]) {
+      const tentativa = canvasParaDataUrl(
+        sourceCanvas,
+        novoWidth,
+        novoHeight,
+        qualidade
+      );
+
+      if (tentativa.blob.size <= limiteBytes) {
+        return tentativa;
+      }
+    }
+
+    escala -= 0.10;
+  }
+
+  return null;
+}
+
+
+function canvasParaDataUrl(sourceCanvas, width, height, qualidade) {
+  const temp = document.createElement("canvas");
+  temp.width = width;
+  temp.height = height;
+
+  const ctx = temp.getContext("2d");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  ctx.drawImage(
+    sourceCanvas,
+    0, 0, sourceCanvas.width, sourceCanvas.height,
+    0, 0, width, height
+  );
+
+  const dataUrl = temp.toDataURL("image/jpeg", qualidade);
+
+  // Calcula o tamanho real aproximado do Base64.
+  const base64 = dataUrl.split(",")[1];
+  const blob = base64ToBlob(base64, "image/jpeg");
+
+  return {
+    dataUrl: dataUrl,
+    blob: blob
+  };
+}
+
+
+function base64ToBlob(base64, mimeType) {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+    const slice = byteCharacters.slice(offset, offset + 1024);
+    const byteNumbers = new Array(slice.length);
+
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+
+  return new Blob(byteArrays, { type: mimeType });
+}
+
+
+async function enviar() {
+  const nome = document.getElementById("nome").value.trim();
+  const bloco = document.getElementById("bloco").value.trim();
+  const apto = document.getElementById("apto").value.trim();
 
   if (!nome || !bloco || !apto) {
     alert("Preencha todos os campos!");
     return;
   }
 
-  const img = document.getElementById("canvas").toDataURL("image/jpeg");
+  if (!window.fotoComprimida) {
+    alert("Capture a foto antes de finalizar.");
+    return;
+  }
 
-  fetch("https://script.google.com/macros/s/AKfycbznmyTHb6XVuT_qRhH6XREZfA2MThl6EPQ6FVDoHmPqtix8t_ZicT-zR1lJFN5KATRH/exec", {
-    method: "POST",
-    body: JSON.stringify({ nome, bloco, apto, img })
-  });
+  const status = document.getElementById("status");
+  const botaoFinalizar = document.querySelector('button[onclick="enviar()"]');
 
-  setTimeout(() => location.reload(), 1000);
+  status.style.display = "block";
+  status.style.color = "#0066cc";
+  status.innerText = "Enviando dados, aguarde...";
+
+  if (botaoFinalizar) {
+    botaoFinalizar.disabled = true;
+    botaoFinalizar.innerText = "Enviando...";
+  }
+
+  try {
+    const resposta = await fetch(
+      "https://script.google.com/macros/s/AKfycbwI0q8XXlRWGz0pAZcXj5nkB7aEg9twg2eLJ8UGDhsUdnMLQkpxms4s_BxXjb67UDco/exec",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          nome: nome,
+          bloco: bloco,
+          apto: apto,
+          img: window.fotoComprimida
+        })
+      }
+    );
+
+    if (!resposta.ok) {
+      throw new Error("HTTP " + resposta.status);
+    }
+
+    const texto = (await resposta.text()).trim();
+
+    if (texto === "SCRIPT_OK" || texto === "OK") {
+      status.style.color = "green";
+      status.innerText =
+        "✅ SCRIPT OK — Dados enviados e foto salva com sucesso.";
+
+      if (botaoFinalizar) {
+        botaoFinalizar.innerText = "Enviado com sucesso";
+      }
+
+      document.getElementById("mensagem").innerText =
+        "Cadastro enviado com sucesso. Aguarde a validação da administração.";
+
+      // Não recarrega automaticamente.
+    } else {
+      throw new Error("Resposta inesperada do Apps Script: " + texto);
+    }
+
+  } catch (erro) {
+    console.error("Erro no envio:", erro);
+
+    status.style.color = "red";
+    status.innerText =
+      "❌ ERRO NO SCRIPT — Não foi possível confirmar o envio. Tente novamente.";
+
+    if (botaoFinalizar) {
+      botaoFinalizar.disabled = false;
+      botaoFinalizar.innerText = "Finalizar";
+    }
+  }
+   setTimeout(() => location.reload(), 500);
 }
+
 </script>
 
 
 
 </body>
 </html>
-
-
-
-
-
-
-
 
 
 
